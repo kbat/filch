@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 #
-# Raspberry Pi AI Camera (IMX500) Model Zoo:
-# https://github.com/raspberrypi/imx500-models
+# filch - An RPi AI Camera–Based Monitoring System
+#         https://github.com/kbat/filch
+#
+# Based on the Picamera2 manual and, to a large extend, on the imx500_object_detection_demo.py example
+# Raspberry Pi AI Camera (IMX500) Model Zoo: https://github.com/raspberrypi/imx500-models
 #
 
 import os, sys
@@ -18,8 +21,7 @@ import numpy as np
 
 from picamera2 import MappedArray, Picamera2
 from picamera2.devices import IMX500
-from picamera2.devices.imx500 import (NetworkIntrinsics,
-                                      postprocess_nanodet_detection)
+from picamera2.devices.imx500 import (NetworkIntrinsics, postprocess_nanodet_detection)
 
 from libcamera import Transform
 import requests
@@ -229,7 +231,10 @@ class Filch:
                             # self.picam2.start(config, show_preview=False)
                             self.camera_start()
 
-                    self.last_results = self.parse_detections(self.picam2.capture_metadata())
+                    request = self.picam2.capture_request()
+                    metadata = request.get_metadata()
+
+                    self.last_results = self.parse_detections(metadata)
                     self.current_objects = tuple(self.labels[int(r.category)] for r in self.last_results)
             #        self.current_objects = tuple(map(lambda o: o.val, t))
                     if self.current_objects:
@@ -247,7 +252,7 @@ class Filch:
                        path = self.create_today_folder()
                        jpg=self.get_timestamp()+"-"+"-".join(msg).replace(" ", "_")+".jpg"
                        jpgpath = os.path.join(path, jpg)
-                       self.picam2.capture_file(jpgpath)
+                       request.save("main", jpgpath)
                        if nmsg and not self.isIgnore(self.current_objects):
                                msg = ", ".join(msg)
                                self.ntfy(msg, jpgpath.replace(self.database, ""))
@@ -265,9 +270,12 @@ class Filch:
                             jpgpath = os.path.join(path, jpg)
                             logger.debug(f"Capture timelapse into {jpgpath}")
 
-                            self.picam2.capture_file(jpgpath)
+                            # self.picam2.capture_file(jpgpath)
+                            request.save("main", jpgpath)
 
                             time_prev = time_now
+
+                    request.release()
 
                 logger.info("Stopping the loop (killed)")
                 self.camera_stop()
