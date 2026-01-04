@@ -131,8 +131,8 @@ class Filch:
                 self.labels = self.get_labels()
 
                 self.last_detections = []
-                self.objects_to_ignore = ('spoon', 'bus', 'train')
-                self.objects_to_follow = ('person', 'cat', 'horse')
+                self.objects_to_ignore = ['spoon', 'bus', 'train']
+                self.objects_to_follow = ['person', 'cat', 'horse']
 
                 self.database      = None
                 self.ntfy_channel  = None
@@ -462,7 +462,12 @@ class Filch:
                 ignore = set(self.objects_to_ignore) & set(objects)
                 if ignore:
                         logger.info(f"Ignoring {ignore}")
-                return ignore
+                if ignore == set(objects):
+                        return True
+                else:
+                        xor = ignore.symmetric_difference(objects)
+                        logger.info(f"isIgnore: not ignoring because the found objects contain non-ignored items:", xor)
+                        return False
 
         def isFollow(self, objects):
                 follow = set(self.objects_to_follow) & set(objects)
