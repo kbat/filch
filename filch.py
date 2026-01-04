@@ -11,7 +11,7 @@ import os, sys
 from pathlib import Path
 import tomllib
 import logging
-from multiprocessing import Pool
+#from multiprocessing import Pool
 # #from functools import lru_cache
 from functools import cache
 
@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 web_timelapse_jpg = "timelapse.jpg"
 web_object_jpg = web_timelapse_jpg # obj.jpg
 
-pool = Pool(processes=1)
+#pool = Pool(processes=1)
 
 def save4web(fin, fout, quality=75):
         """ Save file preview for web server """
