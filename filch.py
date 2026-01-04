@@ -132,7 +132,7 @@ class Filch:
 
                 self.last_detections = []
                 self.objects_to_ignore = ['spoon', 'bus', 'train']
-                self.objects_to_follow = ['person', 'cat', 'horse']
+                self.objects_to_follow = ['person', 'dog', 'cat', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra',  'giraffe'] # https://github.com/raspberrypi/picamera2/blob/main/examples/imx500/assets/coco_labels.txt
 
                 self.database      = None
                 self.ntfy_channel  = None
@@ -272,7 +272,7 @@ class Filch:
                        jpgpath = os.path.join(path, jpg)
                        request.save("main", jpgpath)
                        save4web(jpgpath, web_object_jpg)
-                       if nmsg and not ignore:
+                       if nmsg:
                                msg = ", ".join(msg)
                                self.ntfy(msg, jpgpath.replace(self.database, ""))
 
@@ -459,12 +459,27 @@ class Filch:
                     print("WARNING: No ntfy.sh channel is defined -> not sending")
 
         def isIgnore(self, objects):
+                if len(objects) == 0:
+                        return True
+
+                if len(self.objects_to_ignore) == 0:
+                        return False
+
                 ignore = set(self.objects_to_ignore) & set(objects)
-                if ignore:
-                        logger.info(f"Ignoring {ignore}")
+
                 if ignore == set(objects):
+                        logger.info(f"isIgnore: ignoring {ignore}")
                         return True
                 else:
+                        # The reason why you may want to use symmetric
+                        # difference instead of ^ (despite the beauty
+                        # of its syntax) is because the symmetric
+                        # difference method can take a list as
+                        # input. ^ requires both inputs be
+                        # sets. Converting both lists into sets is a
+                        # little more computation than is minimally
+                        # required:
+                        # https://stackoverflow.com/questions/22736641/xor-on-two-lists-in-python
                         xor = ignore.symmetric_difference(objects)
                         logger.info(f"isIgnore: not ignoring because the found objects contain non-ignored items:", xor)
                         return False
