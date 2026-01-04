@@ -252,7 +252,7 @@ class Filch:
                     metadata = request.get_metadata()
 
                     self.last_results = self.parse_detections(metadata)
-                    self.current_objects = tuple(self.labels[int(r.category)] for r in self.last_results)
+                    self.current_objects = list(self.labels[int(r.category)] for r in self.last_results)
             #        self.current_objects = tuple(map(lambda o: o.val, t))
                     if self.current_objects:
                         logger.info(f"{self.current_objects=}")
@@ -481,7 +481,7 @@ class Filch:
                         # required:
                         # https://stackoverflow.com/questions/22736641/xor-on-two-lists-in-python
                         xor = ignore.symmetric_difference(objects)
-                        logger.info(f"isIgnore: not ignoring because the found objects contain non-ignored items:", xor)
+                        logger.info(f"isIgnore: not ignoring because the found objects contain non-ignored items: {xor}")
                         return False
 
         def isFollow(self, objects):
