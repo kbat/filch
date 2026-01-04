@@ -33,6 +33,7 @@ from zoneinfo import ZoneInfo
 from tzlocal import get_localzone_name
 
 import signal
+import time
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,8 +42,20 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-
 pool = Pool(processes=1)
+
+def save4web(fin, fout, quality=75):
+        """ Save file preview for web server """
+        t1 = time.time()
+        prefix="/var/www/html/"
+        image = cv2.imread(fin)
+        w = 1024
+        h = 768
+        resized_image = cv2.resize(image, (w, h))
+        cv2.imwrite(prefix+fout, resized_image, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
+        t2 = time.time()
+        print("save4web: ", t2-t1)
+
 
 class GracefulKiller:
         """ https://stackoverflow.com/questions/18499497/how-to-process-sigterm-signal-gracefully """
@@ -114,7 +127,7 @@ class Filch:
                 self.labels = self.get_labels()
 
                 self.last_detections = []
-                self.objects_to_ignore = ('spoon')
+                self.objects_not_notify = ('spoon', 'bus', 'train') # take a picture, but don't send notification
                 self.objects_to_follow = ('person', 'cat', 'horse')
 
                 self.database      = None
@@ -253,7 +266,8 @@ class Filch:
                        jpg=self.get_timestamp()+"-"+"-".join(msg).replace(" ", "_")+".jpg"
                        jpgpath = os.path.join(path, jpg)
                        request.save("main", jpgpath)
-                       if nmsg and not self.isIgnore(self.current_objects):
+                       save4web(jpgpath, "obj.jpg")
+                       if nmsg and not self.isNotify(self.current_objects):
                                msg = ", ".join(msg)
                                self.ntfy(msg, jpgpath.replace(self.database, ""))
 
@@ -272,6 +286,7 @@ class Filch:
 
                             # self.picam2.capture_file(jpgpath)
                             request.save("main", jpgpath)
+                            save4web(jpgpath, "timelapse.jpg")
 
                             time_prev = time_now
 
@@ -438,8 +453,8 @@ class Filch:
             else:
                     print("WARNING: No ntfy.sh channel is defined -> not sending")
 
-        def isIgnore(self, objects):
-                ignore = set(self.objects_to_ignore) & set(objects)
+        def isNotify(self, objects):
+                ignore = set(self.objects_not_notify) & set(objects)
                 if ignore:
                         logger.info(f"Ignoring {ignore}")
                 return ignore
