@@ -42,6 +42,10 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+# web file names
+web_timelapse_jpg = "timelapse.jpg"
+web_object_jpg = web_timelapse_jpg # obj.jpg
+
 pool = Pool(processes=1)
 
 def save4web(fin, fout, quality=75):
@@ -127,7 +131,7 @@ class Filch:
                 self.labels = self.get_labels()
 
                 self.last_detections = []
-                self.objects_not_notify = ('spoon', 'bus', 'train') # take a picture, but don't send notification
+                self.objects_to_ignore = ('spoon', 'bus', 'train')
                 self.objects_to_follow = ('person', 'cat', 'horse')
 
                 self.database      = None
@@ -260,14 +264,15 @@ class Filch:
 
                     nmsg = len(msg)
                     follow = self.isFollow(self.current_objects)
+                    ignore = self.isIgnore(self.current_objects)
 
-                    if nmsg or follow:
+                    if (nmsg or follow) and not ignore:
                        path = self.create_today_folder()
-                       jpg=self.get_timestamp()+"-"+"-".join(msg).replace(" ", "_")+".jpg"
+                       jpg=self.get_timestamp()+"-"+"-".join(self.current_objects).replace(" ", "_")+".jpg"
                        jpgpath = os.path.join(path, jpg)
                        request.save("main", jpgpath)
-                       save4web(jpgpath, "obj.jpg")
-                       if nmsg and not self.isNotify(self.current_objects):
+                       save4web(jpgpath, web_object_jpg)
+                       if nmsg and not ignore:
                                msg = ", ".join(msg)
                                self.ntfy(msg, jpgpath.replace(self.database, ""))
 
@@ -286,7 +291,7 @@ class Filch:
 
                             # self.picam2.capture_file(jpgpath)
                             request.save("main", jpgpath)
-                            save4web(jpgpath, "timelapse.jpg")
+                            save4web(jpgpath, web_timelapse_jpg)
 
                             time_prev = time_now
 
@@ -453,8 +458,8 @@ class Filch:
             else:
                     print("WARNING: No ntfy.sh channel is defined -> not sending")
 
-        def isNotify(self, objects):
-                ignore = set(self.objects_not_notify) & set(objects)
+        def isIgnore(self, objects):
+                ignore = set(self.objects_to_ignore) & set(objects)
                 if ignore:
                         logger.info(f"Ignoring {ignore}")
                 return ignore
