@@ -130,6 +130,10 @@ class Filch:
                 self.sleep_time       = cfg['global'].get('sleep_time', 2)
                 self.dusk_delay       = cfg['global'].get('dusk_delay', 30)
 
+                flt = cfg.get('filter', {})
+                self.objects_to_ignore = flt.get('ignore')
+                self.objects_to_follow = flt.get('follow')
+
                 self.sun = Sun(cfg['global']['latitude'], cfg['global']['longitude'])
                 zone_name = get_localzone_name()
                 self.tz = ZoneInfo(zone_name)
@@ -150,8 +154,6 @@ class Filch:
                 self.labels = self.get_labels()
 
                 self.last_detections = []
-                self.objects_to_ignore = ['spoon', 'bus', 'train', 'wine glass', 'elephant', 'bench', 'boat']
-                self.objects_to_follow = ['person', 'dog', 'cat', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra',  'giraffe'] # https://github.com/raspberrypi/picamera2/blob/main/examples/imx500/assets/coco_labels.txt
 
                 self._today_path = None
 
