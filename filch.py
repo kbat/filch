@@ -111,14 +111,30 @@ class Filch:
         Daylight setup: the camera is operating between sunrise and sunset
         """
 
-        def __init__(self, args, latitude, longitude, default_labels=None):
+        def __init__(self, args):
                 print(f"Filch class constructor")
                 self.args = args
-                self.sun = Sun(latitude, longitude)
+
+                config_file = Path.home() / ".filchrc"
+                if not config_file.is_file():
+                        print("ERROR: Configuration file ~/.filchrc does not exist", file=sys.stderr)
+                        sys.exit(1)
+                with open(config_file, "rb") as f:
+                        cfg = tomllib.load(f)
+
+                self.database         = cfg['global']['database']
+                self.url              = cfg['global']['url']
+                self.ntfy_channel     = cfg['ntfy']['channel']
+                self.default_labels   = cfg['global'].get('labels', None)
+                self.timelapse_period = cfg['global'].get('timelapse_period', 10 * 60)
+                self.sleep_time       = cfg['global'].get('sleep_time', 2)
+                self.dusk_delay       = cfg['global'].get('dusk_delay', 30)
+
+                self.sun = Sun(cfg['global']['latitude'], cfg['global']['longitude'])
                 zone_name = get_localzone_name()
                 self.tz = ZoneInfo(zone_name)
+
                 self.model = self.args.model
-                self.default_labels = default_labels
 
                 self.imx500 = None
                 self.config = None
@@ -137,13 +153,7 @@ class Filch:
                 self.objects_to_ignore = ['spoon', 'bus', 'train', 'wine glass', 'elephant', 'bench', 'boat']
                 self.objects_to_follow = ['person', 'dog', 'cat', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra',  'giraffe'] # https://github.com/raspberrypi/picamera2/blob/main/examples/imx500/assets/coco_labels.txt
 
-                self.database         = None
-                self.ntfy_channel     = None
-                self.url              = None
-                self._today_path      = None
-                self.timelapse_period = 10 * 60  # seconds between timelapse frames
-                self.sleep_time       = 2        # seconds to sleep when not following
-                self.dusk_delay       = 30       # minutes past sunset before sleeping
+                self._today_path = None
 
         #@lru_cache
         @cache
@@ -503,29 +513,8 @@ class Filch:
                 return follow
 
 def main():
-        config_file = Path.home() / ".filchrc"
-        if not config_file.is_file():
-                print("ERROR: Configuration file ~/.filchrc does not exist", file=sys.stderr)
-                sys.exit(1)
-
-        with open(config_file, "rb") as f:
-                data = tomllib.load(f)
-
-        latitude       = data['global']['latitude']
-        longitude      = data['global']['longitude']
-        default_labels = data['global'].get('labels', None)
-
-        args = get_args()
-
         # Argus Filch
-        filch = Filch(args, latitude, longitude, default_labels)
-        filch.database         = data['global']['database']
-        filch.url              = data['global']['url']
-        filch.ntfy_channel     = data['ntfy']['channel']
-        filch.timelapse_period = data['global'].get('timelapse_period', filch.timelapse_period)
-        filch.sleep_time       = data['global'].get('sleep_time',       filch.sleep_time)
-        filch.dusk_delay       = data['global'].get('dusk_delay',       filch.dusk_delay)
-
+        filch = Filch(get_args())
         filch.loop()
 
 if __name__ == "__main__":
