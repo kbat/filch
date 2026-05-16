@@ -111,13 +111,14 @@ class Filch:
         Daylight setup: the camera is operating between sunrise and sunset
         """
 
-        def __init__(self, args, latitude, longitude):
+        def __init__(self, args, latitude, longitude, default_labels=None):
                 print(f"Filch class constructor")
                 self.args = args
                 self.sun = Sun(latitude, longitude)
                 zone_name = get_localzone_name()
                 self.tz = ZoneInfo(zone_name)
                 self.model = self.args.model
+                self.default_labels = default_labels
 
                 self.imx500 = None
                 self.config = None
@@ -175,7 +176,10 @@ class Filch:
 
                 # Defaults
                 if self.intrinsics.labels is None:
-                        with open("/home/kbat/projects/test1/assets/coco_labels.txt", "r") as f:
+                        if self.default_labels is None:
+                                print("ERROR: no labels provided by the model and no 'labels' key in ~/.filchrc", file=sys.stderr)
+                                exit(1)
+                        with open(self.default_labels, "r") as f:
                                 self.intrinsics.labels = f.read().splitlines()
                 self.intrinsics.update_with_defaults()
 
@@ -507,13 +511,14 @@ def main():
         with open(config_file, "rb") as f:
                 data = tomllib.load(f)
 
-        latitude     = data['global']['latitude']
-        longitude    = data['global']['longitude']
+        latitude       = data['global']['latitude']
+        longitude      = data['global']['longitude']
+        default_labels = data['global'].get('labels', None)
 
         args = get_args()
 
         # Argus Filch
-        filch = Filch(args, latitude, longitude)
+        filch = Filch(args, latitude, longitude, default_labels)
         filch.database         = data['global']['database']
         filch.url              = data['global']['url']
         filch.ntfy_channel     = data['ntfy']['channel']
