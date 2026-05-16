@@ -141,7 +141,6 @@ class Filch:
                 self.last_results = None
                 self.previous_objects = []
                 self.current_objects = []
-                self.picam2.pre_callback = self.draw_detections
                 logger.info("Starting the loop")
                 self.labels = self.get_labels()
 
@@ -288,6 +287,7 @@ class Filch:
                        jpg=self.get_timestamp()+"-"+"-".join(self.current_objects).replace(" ", "_")+".jpg"
                        jpgpath = os.path.join(path, jpg)
                        image = cv2.cvtColor(request.make_array("main"), cv2.COLOR_RGB2BGR)
+                       self.draw_detections(image)
                        cv2.imwrite(jpgpath, image, [int(cv2.IMWRITE_JPEG_QUALITY), self.jpg_quality])
                        save4web(image, web_object_jpg)
                        if nmsg:
@@ -347,48 +347,19 @@ class Filch:
                 logger.info(f"Dark time -> sleeping until sunrise for {time_to_sunrise} sec.")
                 return time_to_sunrise
 
-        def draw_detections(self, request, stream="main"):
-            """Draw the detections for this request onto the ISP output."""
-            detections = self.last_results
-            if detections is None:
-                return
+        def draw_detections(self, image):
+            """Draw detection annotations onto a BGR numpy image in-place."""
             labels = self.get_labels()
-
-            with MappedArray(request, stream) as m:
-                for detection in detections:
-                    x, y, w, h = detection.box
-                    label = f"{labels[int(detection.category)]} ({detection.conf:.2f})"
-
-                    # Calculate text size and position
-                    (text_width, text_height), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-                    text_x = x + 5
-                    text_y = y + 15
-
-                    # Create a copy of the array to draw the background with opacity
-                    overlay = m.array.copy()
-
-                    # Draw the background rectangle on the overlay
-                    cv2.rectangle(overlay,
-                                  (text_x, text_y - text_height),
-                                  (text_x + text_width, text_y + baseline),
-                                  (255, 255, 255),  # Background color (white)
-                                  cv2.FILLED)
-
-                    alpha = 0.30
-                    cv2.addWeighted(overlay, alpha, m.array, 1 - alpha, 0, m.array)
-
-                    # Draw text on top of the background
-                    cv2.putText(m.array, label, (text_x, text_y),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
-
-                    # Draw detection box
-                    cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0, 255), thickness=1)
-
-                if self.intrinsics.preserve_aspect_ratio:
-                    b_x, b_y, b_w, b_h = self.imx500.get_roi_scaled(request)
-                    color = (255, 0, 0)  # red
-                    cv2.putText(m.array, "ROI", (b_x + 5, b_y + 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
-                    cv2.rectangle(m.array, (b_x, b_y), (b_x + b_w, b_y + b_h), (255, 0, 0, 0))
+            for detection in (self.last_results or []):
+                x, y, w, h = (int(v) for v in detection.box)
+                label = f"{labels[int(detection.category)]} ({detection.conf:.2f})"
+                (tw, th), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                tx, ty = x + 5, y + 15
+                overlay = image.copy()
+                cv2.rectangle(overlay, (tx, ty - th), (tx + tw, ty + baseline), (255, 255, 255), cv2.FILLED)
+                cv2.addWeighted(overlay, 0.30, image, 0.70, 0, image)
+                cv2.putText(image, label, (tx, ty), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+                cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), thickness=2)
 
 
         def get_timestamp(self,ms=True):
