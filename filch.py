@@ -193,6 +193,7 @@ class Filch:
                                 exit(1)
                         with open(self.default_labels, "r") as f:
                                 self.intrinsics.labels = f.read().splitlines()
+
                 self.intrinsics.update_with_defaults()
 
                 if self.args.print_intrinsics:
@@ -388,7 +389,7 @@ class Filch:
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
 
                     # Draw detection box
-                    cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0, 0), thickness=1)
+                    cv2.rectangle(m.array, (x, y), (x + w, y + h), (0, 255, 0, 255), thickness=1)
 
                 if self.intrinsics.preserve_aspect_ratio:
                     b_x, b_y, b_w, b_h = self.imx500.get_roi_scaled(request)
