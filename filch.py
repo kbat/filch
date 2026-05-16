@@ -136,10 +136,13 @@ class Filch:
                 self.objects_to_ignore = ['spoon', 'bus', 'train', 'wine glass', 'elephant', 'bench', 'boat']
                 self.objects_to_follow = ['person', 'dog', 'cat', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra',  'giraffe'] # https://github.com/raspberrypi/picamera2/blob/main/examples/imx500/assets/coco_labels.txt
 
-                self.database      = None
-                self.ntfy_channel  = None
-                self.url           = None
-                self._today_path   = None
+                self.database         = None
+                self.ntfy_channel     = None
+                self.url              = None
+                self._today_path      = None
+                self.timelapse_period = 10 * 60  # seconds between timelapse frames
+                self.sleep_time       = 2        # seconds to sleep when not following
+                self.dusk_delay       = 30       # minutes past sunset before sleeping
 
         #@lru_cache
         @cache
@@ -238,8 +241,6 @@ class Filch:
                 """ Surveillance loop """
 
                 time_prev=0 # previous time counter (for timelapse)
-                timelapse_period = 10*60
-                sleep_time = 2 # seconds
 
                 killer = GracefulKiller()
 
@@ -281,12 +282,12 @@ class Filch:
 
                     self.previous_objects = self.current_objects
 
-                    if not follow and sleep_time:
-                            logger.debug(f"Sleeping for {sleep_time} sec.")
-                            time.sleep(sleep_time)
+                    if not follow and self.sleep_time:
+                            logger.debug(f"Sleeping for {self.sleep_time} sec.")
+                            time.sleep(self.sleep_time)
 
                     time_now = time.time()
-                    if int(time_now - time_prev) > timelapse_period:
+                    if int(time_now - time_prev) > self.timelapse_period:
                             path = self.create_today_folder()
                             jpg=self.get_timelapse_timestamp()+"-timelapse.jpg"
                             jpgpath = os.path.join(path, jpg)
@@ -326,7 +327,7 @@ class Filch:
                 else:
                         next_sunrise = sunrise_tomorrow
 
-                delay = timedelta(minutes=30)
+                delay = timedelta(minutes=self.dusk_delay)
 
                 if now > sunrise_today and now < sunset_today + delay:
                         return 0
@@ -516,9 +517,12 @@ def main():
 
         # Argus Filch
         filch = Filch(args, latitude, longitude)
-        filch.database     = database
-        filch.url          = url # URL prefix to the database folder
-        filch.ntfy_channel = ntfy_channel
+        filch.database         = database
+        filch.url              = url # URL prefix to the database folder
+        filch.ntfy_channel     = ntfy_channel
+        filch.timelapse_period = data['global'].get('timelapse_period', filch.timelapse_period)
+        filch.sleep_time       = data['global'].get('sleep_time',       filch.sleep_time)
+        filch.dusk_delay       = data['global'].get('dusk_delay',       filch.dusk_delay)
 
         filch.loop()
 
