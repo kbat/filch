@@ -38,7 +38,7 @@ Named after [Argus Filch](https://harrypotter.fandom.com/wiki/Argus_Filch), the 
 
 | Component | Notes |
 |-----------|-------|
-| Raspberry Pi (any model with CSI connector) | Tested on RPi 2 (500 MB RAM) and latest RPi 4. Should work smoothly on anything in between. |
+| Raspberry Pi (any model with CSI connector) | Tested on RPi 2 (500 MB RAM) and the latest RPi 4. Should work smoothly on anything in between. |
 | [Raspberry Pi AI Camera](https://www.raspberrypi.com/products/ai-camera/) | Uses the Sony IMX500 with integrated NPU |
 | microSD card or USB storage | Images accumulate quickly at full resolution (2028×1520) |
 
