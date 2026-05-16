@@ -35,6 +35,7 @@ from zoneinfo import ZoneInfo
 from tzlocal import get_localzone_name
 
 import signal
+import threading
 
 logging.basicConfig(
     level=logging.INFO,
@@ -430,12 +431,9 @@ class Filch:
                     logger.warning("Could not post ntfy.sh request")
 
         def ntfy(self, msg, jpg):
-            url=f"{self.url}{jpg}"
-        #    now = datetime.now()
-        #    pool.apply_async(send, (msg, url))
-        #    print("async sent", datetime.now() - now)
+            url = f"{self.url}{jpg}"
             if self.ntfy_channel:
-                    self.send(msg, url)
+                    threading.Thread(target=self.send, args=(msg, url), daemon=True).start()
                     print(msg + f" {url}")
             else:
                     print("WARNING: No ntfy.sh channel is defined -> not sending")
