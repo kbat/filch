@@ -120,9 +120,10 @@ class Filch:
                 self.url              = cfg['global']['url']
                 self.ntfy_channel     = cfg['ntfy']['channel']
                 self.default_labels   = cfg['global'].get('labels', None)
-                self.timelapse_period = cfg['global'].get('timelapse_period', 10 * 60)
-                self.sleep_time       = cfg['global'].get('sleep_time', 2)
-                self.dusk_delay       = cfg['global'].get('dusk_delay', 30)
+                self.timelapse_period  = cfg['global'].get('timelapse_period', 10 * 60)
+                self.sleep_time        = cfg['global'].get('sleep_time', 2)
+                self.dusk_delay        = cfg['global'].get('dusk_delay', 30)
+                self.jpg_quality   = cfg['global'].get('jpg_quality', 80)
 
                 flt = cfg.get('filter', {})
                 self.objects_to_ignore = flt.get('ignore')
@@ -286,7 +287,7 @@ class Filch:
                        jpg=self.get_timestamp()+"-"+"-".join(self.current_objects).replace(" ", "_")+".jpg"
                        jpgpath = os.path.join(path, jpg)
                        image = request.make_array("main")
-                       cv2.imwrite(jpgpath, image)
+                       cv2.imwrite(jpgpath, image, [int(cv2.IMWRITE_JPEG_QUALITY), self.jpg_quality])
                        save4web(image, web_object_jpg)
                        if nmsg:
                                msg = ", ".join(msg)
@@ -306,7 +307,7 @@ class Filch:
                             logger.debug(f"Capture timelapse into {jpgpath}")
 
                             image = request.make_array("main")
-                            cv2.imwrite(jpgpath, image)
+                            cv2.imwrite(jpgpath, image, [int(cv2.IMWRITE_JPEG_QUALITY), self.jpg_quality])
                             save4web(image, web_timelapse_jpg)
 
                             time_prev = time_now
