@@ -107,11 +107,9 @@ class Filch:
         Daylight setup: the camera is operating between sunrise and sunset
         """
 
-        def __init__(self, args):
+        def __init__(self, args, latitude, longitude):
                 print(f"Filch class constructor")
                 self.args = args
-                latitude = 55.52
-                longitude = 13.11
                 self.sun = Sun(latitude, longitude)
                 zone_name = get_localzone_name()
                 self.tz = ZoneInfo(zone_name)
@@ -506,11 +504,13 @@ def main():
         database     = data['global']['database']
         url          = data['global']['url']
         ntfy_channel = data['ntfy']['channel']
+        latitude     = data['global']['latitude']
+        longitude    = data['global']['longitude']
 
         args = get_args()
 
         # Argus Filch
-        filch = Filch(args)
+        filch = Filch(args, latitude, longitude)
         filch.database     = database
         filch.url          = url # URL prefix to the database folder
         filch.ntfy_channel = ntfy_channel
