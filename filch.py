@@ -44,7 +44,10 @@ logger = logging.getLogger(__name__)
 
 # web file names
 web_timelapse_jpg = "timelapse.jpg"
-web_object_jpg = web_timelapse_jpg # obj.jpg
+
+# Every detection event overwrites the timelapse  preview.
+# This is intentional to simplify preview URLs
+web_object_jpg = web_timelapse_jpg
 
 #pool = Pool(processes=1)
 
