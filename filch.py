@@ -23,6 +23,7 @@ import numpy as np
 from picamera2 import MappedArray, Picamera2
 from picamera2.devices import IMX500
 from picamera2.devices.imx500 import (NetworkIntrinsics, postprocess_nanodet_detection)
+from picamera2.devices.imx500.postprocess import scale_boxes
 
 from libcamera import Transform
 import requests
@@ -34,7 +35,6 @@ from zoneinfo import ZoneInfo
 from tzlocal import get_localzone_name
 
 import signal
-import time
 
 logging.basicConfig(
     level=logging.INFO,
@@ -440,7 +440,6 @@ class Filch:
                 boxes, scores, classes = \
                     postprocess_nanodet_detection(outputs=np_outputs[0], conf=threshold, iou_thres=iou,
                                                   max_out_dets=self.args.max_detections)[0]
-                from picamera2.devices.imx500.postprocess import scale_boxes
                 boxes = scale_boxes(boxes, 1, 1, input_h, input_w, False, False)
             else:
                 boxes, scores, classes = np_outputs[0][0], np_outputs[1][0], np_outputs[2][0]
