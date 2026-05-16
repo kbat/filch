@@ -226,10 +226,10 @@ class Filch:
                 self.picam2.close()
 
                 del self.picam2
-                self.picam2 = 0
+                self.picam2 = None
 
                 del self.imx500
-                self.imx500 = 0
+                self.imx500 = None
 
 
         def loop(self):
