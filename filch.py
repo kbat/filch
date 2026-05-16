@@ -305,7 +305,7 @@ class Filch:
                     time_now = time.time()
                     if int(time_now - time_prev) > self.timelapse_period:
                             path = self.create_today_folder()
-                            jpg=self.get_timelapse_timestamp()+"-timelapse.jpg"
+                            jpg=self.get_timestamp(ms=False)+"-timelapse.jpg"
                             jpgpath = os.path.join(path, jpg)
                             logger.debug(f"Capture timelapse into {jpgpath}")
 
@@ -397,18 +397,13 @@ class Filch:
                     cv2.rectangle(m.array, (b_x, b_y), (b_x + b_w, b_y + b_h), (255, 0, 0, 0))
 
 
-        def get_timestamp(self):
-                """ Return current time with milliseconds """
+        def get_timestamp(self,ms=True):
+                """ Return current time with or without milliseconds """
                 now = datetime.now()
-                time_str = now.strftime("%y%m%d-%H%M%S")
-                time_with_ms = f"{time_str}-{now.microsecond // 1000:03d}"
-                return time_with_ms
-
-        def get_timelapse_timestamp(self):
-                """ Return current time without milliseconds """
-                now = datetime.now()
-                time_str = now.strftime("%y%m%d-%H%M%S")
-                return time_str
+                if ms:
+                        return f"{time_str}-{now.microsecond // 1000:03d}"
+                else:
+                        return now.strftime("%y%m%d-%H%M%S")
 
         def get_date(self):
                 """ Return current date as a YYMMDD string."""
