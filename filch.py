@@ -507,9 +507,6 @@ def main():
         with open(config_file, "rb") as f:
                 data = tomllib.load(f)
 
-        database     = data['global']['database']
-        url          = data['global']['url']
-        ntfy_channel = data['ntfy']['channel']
         latitude     = data['global']['latitude']
         longitude    = data['global']['longitude']
 
@@ -517,9 +514,9 @@ def main():
 
         # Argus Filch
         filch = Filch(args, latitude, longitude)
-        filch.database         = database
-        filch.url              = url # URL prefix to the database folder
-        filch.ntfy_channel     = ntfy_channel
+        filch.database         = data['global']['database']
+        filch.url              = data['global']['url']
+        filch.ntfy_channel     = data['ntfy']['channel']
         filch.timelapse_period = data['global'].get('timelapse_period', filch.timelapse_period)
         filch.sleep_time       = data['global'].get('sleep_time',       filch.sleep_time)
         filch.dusk_delay       = data['global'].get('dusk_delay',       filch.dusk_delay)
