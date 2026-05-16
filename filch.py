@@ -446,7 +446,7 @@ class Filch:
                     requests.post(f"https://ntfy.sh/{self.ntfy_channel}", data=f"{msg}".encode(encoding='utf-8'),
                                headers={"Actions": f"view, Open, {url}"})
                     print(" sent", datetime.now()-now)
-                except:
+                except requests.RequestException:
                     logger.warning("Could not post ntfy.sh request")
 
         def ntfy(self, msg, jpg):
@@ -498,6 +498,7 @@ def main():
         config_file = Path.home() / ".filchrc"
         if not config_file.is_file():
                 print("ERROR: Configuration file ~/.filchrc does not exist", file=sys.stderr)
+                sys.exit(1)
 
         with open(config_file, "rb") as f:
                 data = tomllib.load(f)
