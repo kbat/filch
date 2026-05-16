@@ -350,15 +350,29 @@ class Filch:
 
         def draw_detections(self, image):
             """Draw detection annotations onto a BGR numpy image in-place."""
+            detections = self.last_results or []
+            if not detections:
+                return
             labels = self.get_labels()
-            for detection in (self.last_results or []):
-                x, y, w, h = (int(v) for v in detection.box)
-                label = f"{labels[int(detection.category)]} ({detection.conf:.2f})"
+
+            # Pre-compute layout for every detection
+            items = []
+            for det in detections:
+                x, y, w, h = (int(v) for v in det.box)
+                label = f"{labels[int(det.category)]} ({det.conf:.2f})"
                 (tw, th), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                items.append((x, y, w, h, label, tw, th, baseline))
+
+            # Draw all text backgrounds on one overlay copy, then blend once
+            overlay = image.copy()
+            for x, y, w, h, label, tw, th, baseline in items:
                 tx, ty = x + 5, y + 15
-                overlay = image.copy()
                 cv2.rectangle(overlay, (tx, ty - th), (tx + tw, ty + baseline), (255, 255, 255), cv2.FILLED)
-                cv2.addWeighted(overlay, 0.30, image, 0.70, 0, image)
+            cv2.addWeighted(overlay, 0.30, image, 0.70, 0, image)
+
+            # Draw text and bounding boxes on top of the blended image
+            for x, y, w, h, label, tw, th, baseline in items:
+                tx, ty = x + 5, y + 15
                 cv2.putText(image, label, (tx, ty), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
                 cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), thickness=2)
 
