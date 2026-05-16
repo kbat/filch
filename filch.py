@@ -52,17 +52,11 @@ web_object_jpg = web_timelapse_jpg
 
 #pool = Pool(processes=1)
 
-def save4web(fin, fout, quality=75):
-        """ Save file preview for web server """
-        t1 = time.time()
-        prefix="/var/www/html/"
-        image = cv2.imread(fin)
-        w = 1024
-        h = 768
-        resized_image = cv2.resize(image, (w, h))
-        cv2.imwrite(prefix+fout, resized_image, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
-        t2 = time.time()
-        print("save4web: ", t2-t1)
+def save4web(image, fout, quality=75):
+        """ Save a downscaled preview to the web server root. """
+        prefix = "/var/www/html/"
+        resized = cv2.resize(image, (1024, 768))
+        cv2.imwrite(prefix + fout, resized, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
 
 
 class GracefulKiller:
@@ -291,8 +285,9 @@ class Filch:
                        path = self.create_today_folder()
                        jpg=self.get_timestamp()+"-"+"-".join(self.current_objects).replace(" ", "_")+".jpg"
                        jpgpath = os.path.join(path, jpg)
-                       request.save("main", jpgpath)
-                       save4web(jpgpath, web_object_jpg)
+                       image = request.make_array("main")
+                       cv2.imwrite(jpgpath, image)
+                       save4web(image, web_object_jpg)
                        if nmsg:
                                msg = ", ".join(msg)
                                self.ntfy(msg, jpgpath.replace(self.database, ""))
@@ -310,9 +305,9 @@ class Filch:
                             jpgpath = os.path.join(path, jpg)
                             logger.debug(f"Capture timelapse into {jpgpath}")
 
-                            # self.picam2.capture_file(jpgpath)
-                            request.save("main", jpgpath)
-                            save4web(jpgpath, web_timelapse_jpg)
+                            image = request.make_array("main")
+                            cv2.imwrite(jpgpath, image)
+                            save4web(image, web_timelapse_jpg)
 
                             time_prev = time_now
 
