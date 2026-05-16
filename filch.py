@@ -139,6 +139,7 @@ class Filch:
                 self.database      = None
                 self.ntfy_channel  = None
                 self.url           = None
+                self._today_path   = None
 
         #@lru_cache
         @cache
@@ -397,11 +398,11 @@ class Filch:
                 return datetime.now().strftime("%y%m%d")
 
         def create_today_folder(self):
-                """ Create a folder for today's images if it does not exist and return its path. """
-                today_folder = self.get_date()
-                path = f"{self.database}/{today_folder}"
-                folder = Path(path)
-                folder.mkdir(parents=True, exist_ok=True)
+                """ Return path to today's image folder, creating it only when the date changes. """
+                path = f"{self.database}/{self.get_date()}"
+                if path != self._today_path:
+                        Path(path).mkdir(parents=True, exist_ok=True)
+                        self._today_path = path
                 return path
 
         def parse_detections(self, metadata: dict):
