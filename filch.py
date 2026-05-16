@@ -287,7 +287,7 @@ class Filch:
                        path = self.create_today_folder()
                        jpg=self.get_timestamp()+"-"+"-".join(self.current_objects).replace(" ", "_")+".jpg"
                        jpgpath = os.path.join(path, jpg)
-                       image = request.make_array("main")
+                       image = cv2.cvtColor(request.make_array("main"), cv2.COLOR_RGB2BGR)
                        cv2.imwrite(jpgpath, image, [int(cv2.IMWRITE_JPEG_QUALITY), self.jpg_quality])
                        save4web(image, web_object_jpg)
                        if nmsg:
@@ -307,7 +307,7 @@ class Filch:
                             jpgpath = os.path.join(path, jpg)
                             logger.debug(f"Capture timelapse into {jpgpath}")
 
-                            image = request.make_array("main")
+                            image = cv2.cvtColor(request.make_array("main"), cv2.COLOR_RGB2BGR)
                             cv2.imwrite(jpgpath, image, [int(cv2.IMWRITE_JPEG_QUALITY), self.jpg_quality])
                             save4web(image, web_timelapse_jpg)
 
