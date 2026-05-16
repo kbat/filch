@@ -394,10 +394,11 @@ class Filch:
         def get_timestamp(self,ms=True):
                 """ Return current time with or without milliseconds """
                 now = datetime.now()
+                time_str = now.strftime("%y%m%d-%H%M%S")
                 if ms:
                         return f"{time_str}-{now.microsecond // 1000:03d}"
                 else:
-                        return now.strftime("%y%m%d-%H%M%S")
+                        return time_str
 
         def get_date(self):
                 """ Return current date as a YYMMDD string."""
