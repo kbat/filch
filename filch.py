@@ -131,7 +131,7 @@ class Filch:
                 self.labels = self.get_labels()
 
                 self.last_detections = []
-                self.objects_to_ignore = ['spoon', 'bus', 'train']
+                self.objects_to_ignore = ['spoon', 'bus', 'train', 'wine glass', 'elephant', 'bench', 'boat']
                 self.objects_to_follow = ['person', 'dog', 'cat', 'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra',  'giraffe'] # https://github.com/raspberrypi/picamera2/blob/main/examples/imx500/assets/coco_labels.txt
 
                 self.database      = None
@@ -254,8 +254,8 @@ class Filch:
                     self.last_results = self.parse_detections(metadata)
                     self.current_objects = list(self.labels[int(r.category)] for r in self.last_results)
             #        self.current_objects = tuple(map(lambda o: o.val, t))
-                    if self.current_objects:
-                        logger.info(f"{self.current_objects=}")
+                    # if self.current_objects:
+                    #     logger.info(f"{self.current_objects=}")
                     msg = []
                     for obj in self.current_objects:
                          if obj not in self.previous_objects:
@@ -442,10 +442,12 @@ class Filch:
         def send(self, msg, url):
                 now = datetime.now()
                 print("sending", now)
-                requests.post(f"https://ntfy.sh/{self.ntfy_channel}", data=f"{msg}".encode(encoding='utf-8'),
-                           headers={"Actions": f"view, Open, {url}"})
-                print(" sent", datetime.now()-now)
-
+                try:
+                    requests.post(f"https://ntfy.sh/{self.ntfy_channel}", data=f"{msg}".encode(encoding='utf-8'),
+                               headers={"Actions": f"view, Open, {url}"})
+                    print(" sent", datetime.now()-now)
+                except:
+                    logger.warning("Could not post ntfy.sh request")
 
         def ntfy(self, msg, jpg):
             url=f"{self.url}{jpg}"
