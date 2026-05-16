@@ -150,7 +150,11 @@ class Filch:
 
                 self.last_detections = []
 
-                self._today_path = None
+                self._today_path    = None
+                self._sun_cache_date = None
+                self._sunrise_today  = None
+                self._sunset_today   = None
+                self._sunrise_tomorrow = None
 
         #@lru_cache
         @cache
@@ -317,38 +321,34 @@ class Filch:
                 logger.info("Stopping the loop (killed)")
                 self.camera_stop()
 
+        def _refresh_sun_cache(self, today):
+                """Recompute sunrise/sunset for today and tomorrow; called once per day."""
+                tomorrow = today + timedelta(days=1)
+                self._sunrise_today    = self.sun.get_local_sunrise_time(today)
+                self._sunset_today     = self.sun.get_local_sunset_time(today)
+                self._sunrise_tomorrow = self.sun.get_local_sunrise_time(tomorrow)
+                self._sun_cache_date   = today
+
         def get_time_to_sunrise(self):
                 """Return 0 if it's daytime now.
 
-                Otherwise return numer of seconds to the soonest sunrise.
+                Otherwise return number of seconds to the soonest sunrise.
 
                 """
-                sun = self.sun
-                tz = self.tz
-
                 today = date.today()
-                tomorrow = today + timedelta(days=1)
+                if today != self._sun_cache_date:
+                        self._refresh_sun_cache(today)
 
-                sunset_today = sun.get_local_sunset_time(today)
-                sunrise_today = sun.get_local_sunrise_time(today)
-                sunrise_tomorrow = sun.get_local_sunrise_time(tomorrow)
+                now = datetime.now(self.tz)
 
-                now = datetime.now(tz)
+                next_sunrise = self._sunrise_today if now < self._sunrise_today else self._sunrise_tomorrow
 
-                if now < sunrise_today:
-                        next_sunrise = sunrise_today
-                else:
-                        next_sunrise = sunrise_tomorrow
-
-                delay = timedelta(minutes=self.dusk_delay)
-
-                if now > sunrise_today and now < sunset_today + delay:
+                if now > self._sunrise_today and now < self._sunset_today + timedelta(minutes=self.dusk_delay):
                         return 0
-                else:
-                        time_to_sunrise = int((next_sunrise-now).total_seconds())
 
-                        logger.info(f"Dark time -> sleeping until sunrise for {time_to_sunrise} sec.")
-                        return time_to_sunrise
+                time_to_sunrise = int((next_sunrise - now).total_seconds())
+                logger.info(f"Dark time -> sleeping until sunrise for {time_to_sunrise} sec.")
+                return time_to_sunrise
 
         def draw_detections(self, request, stream="main"):
             """Draw the detections for this request onto the ISP output."""
