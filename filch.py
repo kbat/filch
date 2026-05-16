@@ -446,7 +446,7 @@ class Filch:
                 Detection(box, category, score, metadata, self.imx500, self.picam2)
                 for box, score, category in zip(boxes, scores, classes)
                 if score > threshold
-            ]
+            ][:self.args.max_detections]
             return self.last_detections
 
         def send(self, msg, url):
