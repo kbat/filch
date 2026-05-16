@@ -7,7 +7,8 @@
 # Raspberry Pi AI Camera (IMX500) Model Zoo: https://github.com/raspberrypi/imx500-models
 #
 
-import os, sys
+import os
+import sys
 from pathlib import Path
 import tomllib
 import logging
@@ -217,7 +218,7 @@ class Filch:
                         self.imx500.set_auto_aspect_ratio()
 
                 # Give the camera a moment to adjust exposure
-                # suggestion (might heko): increase from 0.5 to 5 sec if the first image is too dark
+                # suggestion (might help): increase from 0.5 to 5 sec if the first image is too dark
                 time.sleep(0.5)
 
         def camera_stop(self):
