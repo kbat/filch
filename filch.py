@@ -35,6 +35,7 @@ from tzlocal import get_localzone_name
 
 import signal
 import threading
+from concurrent.futures import ThreadPoolExecutor
 
 logging.basicConfig(
     level=logging.INFO,
@@ -143,6 +144,8 @@ class Filch:
 
                 self.last_detections = []
 
+                self._io_executor = ThreadPoolExecutor(max_workers=1)
+
                 self._today_path = None
                 if self.daylight_only:
                         self._sun_cache_date   = None
@@ -247,6 +250,11 @@ class Filch:
                 self.imx500 = None
 
 
+        def _save_image(self, image, jpgpath, web_path):
+                """Write full-res archive image and web preview (runs in IO thread)."""
+                cv2.imwrite(jpgpath, image, [int(cv2.IMWRITE_JPEG_QUALITY), self.jpg_quality])
+                save4web(image, web_path, self.jpg_quality_web)
+
         def loop(self):
                 """ Surveillance loop """
 
@@ -286,8 +294,7 @@ class Filch:
                        jpgpath = os.path.join(path, jpg)
                        image = cv2.cvtColor(request.make_array("main"), cv2.COLOR_RGB2BGR)
                        self.draw_detections(image)
-                       cv2.imwrite(jpgpath, image, [int(cv2.IMWRITE_JPEG_QUALITY), self.jpg_quality])
-                       save4web(image, self.web_object_jpg, self.jpg_quality_web)
+                       self._io_executor.submit(self._save_image, image, jpgpath, self.web_object_jpg)
                        if nmsg:
                                msg = ", ".join(msg)
                                self.ntfy(msg, jpgpath.replace(self.database, ""))
@@ -306,14 +313,14 @@ class Filch:
                             logger.debug(f"Capture timelapse into {jpgpath}")
 
                             image = cv2.cvtColor(request.make_array("main"), cv2.COLOR_RGB2BGR)
-                            cv2.imwrite(jpgpath, image, [int(cv2.IMWRITE_JPEG_QUALITY), self.jpg_quality])
-                            save4web(image, self.web_timelapse_jpg, self.jpg_quality_web)
+                            self._io_executor.submit(self._save_image, image, jpgpath, self.web_timelapse_jpg)
 
                             time_prev = time_now
 
                     request.release()
 
                 logger.info("Stopping the loop (killed)")
+                self._io_executor.shutdown(wait=True)
                 self.camera_stop()
 
         def _refresh_sun_cache(self, today):
