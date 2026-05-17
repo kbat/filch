@@ -11,7 +11,7 @@ Named after [Argus Filch](https://harrypotter.fandom.com/wiki/Argus_Filch), the 
 ## Features
 
 - **On-device AI inference** — the IMX500 chip runs the neural network; the host CPU is nearly idle during detection
-- **Daylight-only operation** — automatically sleeps from sunset to sunrise, computed from your configured coordinates
+- **Daylight-only operation** — optionally sleeps from sunset to sunrise, computed from your configured coordinates; disable for indoor or IR-lit use
 - **Configurable object filtering** — ignore noisy classes (e.g. birds, cars) and/or follow only specific ones (e.g. person)
 - **Push notifications** via [ntfy.sh](https://ntfy.sh/) — free, no account required, works with the iOS/Android app
 - **Annotated JPEG archive** — full-resolution images with bounding boxes saved per detection event, organised by date
@@ -95,6 +95,11 @@ Create `~/.filchrc` (TOML format):
 [global]
 database  = "/home/pi/surveillance"   # where annotated JPEGs are archived
 url       = "http://192.168.1.42"     # URL where the database folder above is visible in nginx
+
+# Daylight-only operation: sleep between sunset and sunrise (default: true).
+# Set to false to run around the clock (indoor cameras, IR-lit setups, etc.).
+# latitude and longitude are required only when daylight_only = true.
+daylight_only = true
 latitude  = 55.6050                   # decimal degrees, used for sunrise/sunset
 longitude = 13.0038                   # decimal degrees
 

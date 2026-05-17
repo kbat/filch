@@ -2,8 +2,14 @@
 [global]
 database = "/path/to/the/database/folder"   # path to the folder where the generated images are saved
 url      = "http://<your-machine-address>"  # URL to the database folder to access it through browser
-latitude = 55.73
+
+# Daylight-only operation: sleep between sunset and sunrise.
+# Set to false to run around the clock (e.g. for indoor use or with IR lighting).
+# When true, latitude and longitude are required.
+daylight_only = true
+latitude  = 55.73
 longitude = 13.24
+
 timelapse_period = 3600  # seconds between timelapse images
 sleep_time       = 2     # seconds to sleep when not following (default 2)
 dusk_delay       = 30    # minutes past sunset before sleeping (default 30)

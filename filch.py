@@ -119,14 +119,15 @@ class Filch:
                 self.jpg_quality_web   = cfg['global'].get('jpg_quality_web', 75)
                 self.web_object_jpg    = cfg['global'].get('web_object_jpg', '/var/www/html/obj.jpg')
                 self.web_timelapse_jpg = cfg['global'].get('web_timelapse_jpg', '/var/www/html/timelapse.jpg')
+                self.daylight_only     = cfg['global'].get('daylight_only', True)
 
                 flt = cfg.get('filter', {})
                 self.objects_to_ignore = flt.get('ignore')
                 self.objects_to_follow = flt.get('follow')
 
-                self.sun = Sun(cfg['global']['latitude'], cfg['global']['longitude'])
-                zone_name = get_localzone_name()
-                self.tz = ZoneInfo(zone_name)
+                if self.daylight_only:
+                        self.sun = Sun(cfg['global']['latitude'], cfg['global']['longitude'])
+                        self.tz = ZoneInfo(get_localzone_name())
 
                 self.model = self.args.model
 
@@ -144,11 +145,12 @@ class Filch:
 
                 self.last_detections = []
 
-                self._today_path    = None
-                self._sun_cache_date = None
-                self._sunrise_today  = None
-                self._sunset_today   = None
-                self._sunrise_tomorrow = None
+                self._today_path = None
+                if self.daylight_only:
+                        self._sun_cache_date   = None
+                        self._sunrise_today    = None
+                        self._sunset_today     = None
+                        self._sunrise_tomorrow = None
 
         #@lru_cache
         @cache
@@ -325,11 +327,14 @@ class Filch:
                 self._sun_cache_date   = today
 
         def get_time_to_sunrise(self):
-                """Return 0 if it's daytime now.
+                """Return 0 if it's daytime now (or daylight gating is disabled).
 
                 Otherwise return number of seconds to the soonest sunrise.
 
                 """
+                if not self.daylight_only:
+                        return 0
+
                 today = date.today()
                 if today != self._sun_cache_date:
                         self._refresh_sun_cache(today)
