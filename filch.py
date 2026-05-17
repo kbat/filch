@@ -12,8 +12,7 @@ import sys
 from pathlib import Path
 import tomllib
 import logging
-#from multiprocessing import Pool
-# #from functools import lru_cache
+# from functools import lru_cache
 from functools import cache
 
 import argparse
@@ -43,8 +42,6 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
-#pool = Pool(processes=1)
 
 def save4web(image, fout, quality):
         """ Save a downscaled preview to the web server root. """
@@ -100,7 +97,6 @@ class Filch:
         """
 
         def __init__(self, args):
-                print(f"Filch class constructor")
                 self.args = args
 
                 config_file = Path(self.args.config).expanduser()
@@ -174,7 +170,7 @@ class Filch:
                         self.intrinsics.task = "object detection"
                 elif self.intrinsics.task != "object detection":
                         print("Network is not an object detection task", file=sys.stderr)
-                        exit()
+                        sys.exit(1)
 
                 for key, value in vars(self.args).items():
                         if key == 'labels' and value is not None:
@@ -187,7 +183,7 @@ class Filch:
                 if self.intrinsics.labels is None:
                         if self.default_labels is None:
                                 print("ERROR: no labels provided by the model and no 'labels' key in ~/.filchrc", file=sys.stderr)
-                                exit(1)
+                                sys.exit(1)
                         with open(self.default_labels, "r") as f:
                                 self.intrinsics.labels = f.read().splitlines()
 
@@ -195,11 +191,11 @@ class Filch:
 
                 if self.args.print_intrinsics:
                         print(self.intrinsics)
-                        exit()
+                        sys.exit(0)
 
         def camera_start(self):
                 """ Initialisation of the RPI AI camera """
-                print("Initialisation of the RPI AI camera")
+                logger.info("Initialisation of the RPI AI camera")
                 self.override_intrinsics()
 
                 self.picam2 = Picamera2(self.imx500.camera_num)
@@ -225,9 +221,9 @@ class Filch:
 
                 self.config = timelapse_config
 
-                print("Configuration:",self.config)
+#                print("Configuration:",self.config)
                 self.picam2.align_configuration(self.config)
-                print("Aligned configuration:",self.config)
+#                print("Aligned configuration:",self.config)
 
                 #    self.imx500.show_network_fw_progress_bar()
                 self.picam2.start(self.config, show_preview=False)
@@ -440,21 +436,21 @@ class Filch:
 
         def send(self, msg, url):
                 now = datetime.now()
-                print("sending", now)
+#                print("sending", now)
                 try:
                     requests.post(f"https://ntfy.sh/{self.ntfy_channel}", data=f"{msg}".encode(encoding='utf-8'),
                                headers={"Actions": f"view, Open, {url}"})
-                    print(" sent", datetime.now()-now)
+#                    print(" sent", datetime.now()-now)
                 except requests.RequestException:
                     logger.warning("Could not post ntfy.sh request")
 
         def ntfy(self, msg, jpg):
-            url = f"{self.url}{jpg}"
             if self.ntfy_channel:
+                    url = f"{self.url}{jpg}"
                     threading.Thread(target=self.send, args=(msg, url), daemon=True).start()
-                    print(msg + f" {url}")
+                    logger.info(msg + f" {url}")
             else:
-                    print("WARNING: No ntfy.sh channel is defined -> not sending")
+                    logger.info("WARNING: No ntfy.sh channel is defined -> not sending")
 
         def isIgnore(self, objects):
                 if len(objects) == 0:
@@ -479,15 +475,15 @@ class Filch:
                         # required:
                         # https://stackoverflow.com/questions/22736641/xor-on-two-lists-in-python
                         xor = ignore.symmetric_difference(objects)
-                        logger.info(f"isIgnore: not ignoring because the found objects contain non-ignored items: {xor}")
+                        logger.debug(f"isIgnore: not ignoring because the found objects contain non-ignored items: {xor}")
                         return False
 
         def isFollow(self, objects):
                 follow = set(self.objects_to_follow) & set(objects)
                 if follow:
-                        logger.info(f"Following {follow}")
+                        logger.debug(f"Following {follow}")
                 elif objects:
-                        logger.info(f"Not following {objects}")
+                        logger.debug(f"Not following {objects}")
                 return follow
 
 def main():

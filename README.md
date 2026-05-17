@@ -94,7 +94,7 @@ Create `~/.filchrc` (TOML format):
 ```toml
 [global]
 database  = "/home/pi/surveillance"   # where annotated JPEGs are archived
-url       = "http://192.168.1.42"     # URL where the database folder above is visible in nginx
+url       = "http://localhost/filch"  # URL where the database folder above is visible in the web server
 
 # Daylight-only operation: sleep between sunset and sunrise (default: true).
 # Set to false to run around the clock (indoor cameras, IR-lit setups, etc.).
