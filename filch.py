@@ -89,6 +89,8 @@ def get_args():
                         help="Path to the labels file")
     parser.add_argument("--print-intrinsics", action="store_true",
                         help="Print JSON network_intrinsics then exit")
+    parser.add_argument("-c", "--config", type=str, default="~/.filchrc",
+                        help="Path to the configuration file in the TOML format (default: ~/.filchrc)")
     return parser.parse_args()
 
 class Filch:
@@ -101,9 +103,9 @@ class Filch:
                 print(f"Filch class constructor")
                 self.args = args
 
-                config_file = Path.home() / ".filchrc"
+                config_file = Path(self.args.config).expanduser()
                 if not config_file.is_file():
-                        print("ERROR: Configuration file ~/.filchrc does not exist", file=sys.stderr)
+                        print(f"ERROR: Configuration file {config_file} does not exist", file=sys.stderr)
                         sys.exit(1)
                 with open(config_file, "rb") as f:
                         cfg = tomllib.load(f)

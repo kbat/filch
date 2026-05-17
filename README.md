@@ -146,6 +146,7 @@ The script starts the camera, loads the default model, and enters the detection 
 ### Command-line options
 
 ```
+-c, --config PATH       Path to the TOML configuration file (default: ~/.filchrc)
 --model PATH            Path to .rpk model file
                         (default: SSD MobileNetV2 from imx500-models)
 --threshold FLOAT       Minimum detection confidence, 0–1 (default: 0.55)
