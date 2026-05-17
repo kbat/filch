@@ -45,16 +45,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # web file names
-web_timelapse_jpg = "timelapse.jpg"
-web_object_jpg    = "obj.jpg"
+web_timelapse_jpg = "/var/www/html/timelapse.jpg"
+web_object_jpg    = "/var/www/html/obj.jpg"
 
 #pool = Pool(processes=1)
 
 def save4web(image, fout, quality=75):
         """ Save a downscaled preview to the web server root. """
-        prefix = "/var/www/html/"
         resized = cv2.resize(image, (1024, 768))
-        cv2.imwrite(prefix + fout, resized, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
+        cv2.imwrite(fout, resized, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
 
 
 class GracefulKiller:
