@@ -11,8 +11,10 @@ dusk_delay       = 30    # minutes past sunset before sleeping (default 30)
 # The key is optional — if the model has embedded labels, it's ignored.
 # If labels are needed and neither --labels nor the config key is present, the program now exits with an error
 labels = "/path/to/coco_labels.txt"
-# Compression level of JPEG images
+# Compression level of full size JPEG images
 jpg_quality = 80
+# Compression level of web-preview JPEG images
+jpg_quality_web = 75
 # Paths to the web-preview images that always point to the most recently taken image
 web_object_jpg    = "/var/www/html/object.jpg"     # web-preview path for detection images
 web_timelapse_jpg = "/var/www/html/timelapse.jpg"  # web-preview path for timelapse images

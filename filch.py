@@ -46,11 +46,10 @@ logger = logging.getLogger(__name__)
 
 #pool = Pool(processes=1)
 
-def save4web(image, fout, quality=75):
+def save4web(image, fout, quality):
         """ Save a downscaled preview to the web server root. """
         resized = cv2.resize(image, (1024, 768))
         cv2.imwrite(fout, resized, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
-
 
 class GracefulKiller:
         """ https://stackoverflow.com/questions/18499497/how-to-process-sigterm-signal-gracefully """
@@ -116,7 +115,8 @@ class Filch:
                 self.timelapse_period  = cfg['global'].get('timelapse_period', 10 * 60)
                 self.sleep_time        = cfg['global'].get('sleep_time', 2)
                 self.dusk_delay        = cfg['global'].get('dusk_delay', 30)
-                self.jpg_quality        = cfg['global'].get('jpg_quality', 80)
+                self.jpg_quality       = cfg['global'].get('jpg_quality', 80)
+                self.jpg_quality_web   = cfg['global'].get('jpg_quality_web', 75)
                 self.web_object_jpg    = cfg['global'].get('web_object_jpg', '/var/www/html/obj.jpg')
                 self.web_timelapse_jpg = cfg['global'].get('web_timelapse_jpg', '/var/www/html/timelapse.jpg')
 
@@ -287,7 +287,7 @@ class Filch:
                        image = cv2.cvtColor(request.make_array("main"), cv2.COLOR_RGB2BGR)
                        self.draw_detections(image)
                        cv2.imwrite(jpgpath, image, [int(cv2.IMWRITE_JPEG_QUALITY), self.jpg_quality])
-                       save4web(image, self.web_object_jpg)
+                       save4web(image, self.web_object_jpg, self.jpg_quality_web)
                        if nmsg:
                                msg = ", ".join(msg)
                                self.ntfy(msg, jpgpath.replace(self.database, ""))
@@ -307,7 +307,7 @@ class Filch:
 
                             image = cv2.cvtColor(request.make_array("main"), cv2.COLOR_RGB2BGR)
                             cv2.imwrite(jpgpath, image, [int(cv2.IMWRITE_JPEG_QUALITY), self.jpg_quality])
-                            save4web(image, self.web_timelapse_jpg)
+                            save4web(image, self.web_timelapse_jpg, self.jpg_quality_web)
 
                             time_prev = time_now
 
