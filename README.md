@@ -103,6 +103,8 @@ timelapse_period = 600    # seconds between timelapse frames (default: 600)
 sleep_time       = 2      # seconds to wait between detection cycles to reduce CPU load (default: 2)
 dusk_delay       = 30     # minutes after sunset to keep running (default: 30)
 jpg_quality      = 80     # JPEG quality for saved images, 1–95 (default: 80)
+web_object_jpg    = "/var/www/html/obj.jpg"        # web-preview path for detection images
+web_timelapse_jpg = "/var/www/html/timelapse.jpg"  # web-preview path for timelapse images
 
 # Optional: path to a plain-text labels file, one label per line.
 # Only needed when the model does not embed labels (rare).

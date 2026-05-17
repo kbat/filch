@@ -44,10 +44,6 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-# web file names
-web_timelapse_jpg = "/var/www/html/timelapse.jpg"
-web_object_jpg    = "/var/www/html/obj.jpg"
-
 #pool = Pool(processes=1)
 
 def save4web(image, fout, quality=75):
@@ -120,7 +116,9 @@ class Filch:
                 self.timelapse_period  = cfg['global'].get('timelapse_period', 10 * 60)
                 self.sleep_time        = cfg['global'].get('sleep_time', 2)
                 self.dusk_delay        = cfg['global'].get('dusk_delay', 30)
-                self.jpg_quality   = cfg['global'].get('jpg_quality', 80)
+                self.jpg_quality        = cfg['global'].get('jpg_quality', 80)
+                self.web_object_jpg    = cfg['global'].get('web_object_jpg', '/var/www/html/obj.jpg')
+                self.web_timelapse_jpg = cfg['global'].get('web_timelapse_jpg', '/var/www/html/timelapse.jpg')
 
                 flt = cfg.get('filter', {})
                 self.objects_to_ignore = flt.get('ignore')
@@ -289,7 +287,7 @@ class Filch:
                        image = cv2.cvtColor(request.make_array("main"), cv2.COLOR_RGB2BGR)
                        self.draw_detections(image)
                        cv2.imwrite(jpgpath, image, [int(cv2.IMWRITE_JPEG_QUALITY), self.jpg_quality])
-                       save4web(image, web_object_jpg)
+                       save4web(image, self.web_object_jpg)
                        if nmsg:
                                msg = ", ".join(msg)
                                self.ntfy(msg, jpgpath.replace(self.database, ""))
@@ -309,7 +307,7 @@ class Filch:
 
                             image = cv2.cvtColor(request.make_array("main"), cv2.COLOR_RGB2BGR)
                             cv2.imwrite(jpgpath, image, [int(cv2.IMWRITE_JPEG_QUALITY), self.jpg_quality])
-                            save4web(image, web_timelapse_jpg)
+                            save4web(image, self.web_timelapse_jpg)
 
                             time_prev = time_now
 

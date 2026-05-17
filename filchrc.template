@@ -13,6 +13,9 @@ dusk_delay       = 30    # minutes past sunset before sleeping (default 30)
 labels = "/path/to/coco_labels.txt"
 # Compression level of JPEG images
 jpg_quality = 80
+# Paths to the web-preview images that always point to the most recently taken image
+web_object_jpg    = "/var/www/html/object.jpg"     # web-preview path for detection images
+web_timelapse_jpg = "/var/www/html/timelapse.jpg"  # web-preview path for timelapse images
 
 [ntfy]
 channel = "<your ntfy.sh channel name>"
