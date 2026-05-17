@@ -1,0 +1,22 @@
+# Copy this file to ~/.filchrc and customise it
+[global]
+database = "/path/to/the/database/folder"   # path to the folder where the generated images are saved
+url      = "http://<your-machine-address>"  # URL to the database folder to access it through browser
+latitude = 55.73
+longitude = 13.24
+timelapse_period = 3600  # seconds between timelapse images
+sleep_time       = 2     # seconds to sleep when not following (default 2)
+dusk_delay       = 30    # minutes past sunset before sleeping (default 30)
+# Path to the labels.txt file.
+# The key is optional — if the model has embedded labels, it's ignored.
+# If labels are needed and neither --labels nor the config key is present, the program now exits with an error
+labels = "/path/to/coco_labels.txt"
+# Compression level of JPEG images
+jpg_quality = 80
+
+[ntfy]
+channel = "<your ntfy.sh channel name>"
+
+[filter]
+ignore = ["spoon", "bus", "train", "wine glass", "bench", "boat"]
+follow = ["person", "dog", "cat", "horse", "sheep", "cow", "bear", "zebra", "giraffe"]
